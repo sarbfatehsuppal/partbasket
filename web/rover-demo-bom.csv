@@ -1,0 +1,25 @@
+Manufacturer Part Number,Manufacturer,Quantity,Designators,Description
+DEMO-RVR-BLACKPILL,WeAct,1,U1,STM32F411 Black Pill module; exact revision TBD
+DEMO-RVR-ESP32,,1,U2,ESP32 DevKit with WROOM module; exact board TBD
+DEMO-RVR-MX1616,,2,U3 U4,MX1616 dual motor-driver module; verify board and chip markings
+DEMO-RVR-X2-1104,X2,2,U5 U6,X2 1104 buck converter module
+DEMO-RVR-AHCT125,Texas Instruments,1,U7,SN74AHCT1G125 trigger buffer; package TBD
+DEMO-RVR-HCSR04,,1,off-board via J9,HC-SR04 ultrasonic module; exact vendor TBD
+DEMO-RVR-SK51S,X2,4,off-board via J5-J8,X2 SK51S TT gearmotor; four powered wheels
+DEMO-RVR-SERVO,,2,off-board via J2 J3,Steering servo; model and current ratings TBD
+DEMO-RVR-AA-HOLDER,,1,off-board via J1,Eight-AA pack holder; chemistry and current ratings TBD; cells excluded
+DEMO-RVR-R2K2,,1,R1,2.2 kohm 1 percent resistor; footprint TBD
+DEMO-RVR-R3K3,,1,R2,3.3 kohm 1 percent resistor; footprint TBD
+DEMO-RVR-R1K,,2,R3 R4,1 kohm resistor rated at least 0.125 W; footprint TBD
+DEMO-RVR-R10K,,8,R5-R12,10 kohm pulldown resistor; footprint TBD
+DEMO-RVR-C100N,,7,C2 C3 C4 C6 C8 C9 C10,100 nF capacitor rated at least 16 V; footprint TBD
+DEMO-RVR-C470U-LOWESR,,1,C1,470 uF low ESR capacitor rated at least 10 V; footprint TBD
+DEMO-RVR-C470U,,2,C5 C7,470 uF capacitor rated at least 10 V; footprint TBD
+DEMO-RVR-LED,,2,D2 D3,Power rail indicator LED; colour and exact part TBD
+DEMO-RVR-SHUNT,,2,JP1 JP2,Removable two-pin power link; header and shunt set
+DEMO-RVR-2PIN-MOTOR,,4,J5 J6 J7 J8,Two-pin motor connector; family and pitch TBD
+DEMO-RVR-2PIN-BAT,,1,J1,Two-pin battery input connector; family and current rating TBD
+DEMO-RVR-3PIN,,2,J2 J3,Three-pin steering servo header; pitch TBD
+DEMO-RVR-4PIN-SWD,,1,J4,Four-pin SWD header; pitch TBD
+DEMO-RVR-4PIN-SONAR,,1,J9,Four-pin sonar connector; pitch and cable order TBD
+DEMO-RVR-TESTPOINT,,9,TP1-TP9,Test point; mounting style and footprint TBD

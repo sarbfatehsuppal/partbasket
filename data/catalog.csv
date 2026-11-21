@@ -1,0 +1,11 @@
+mpn,manufacturer,description
+LM358DR,Texas Instruments,Dual low power operational amplifier 700 kHz SOIC-8 SMD
+LM358P,Texas Instruments,Dual low power operational amplifier 700 kHz PDIP-8 through hole
+NE555P,Texas Instruments,555 precision timer PDIP-8 through hole
+NE555DR,Texas Instruments,555 precision timer SOIC-8 SMD
+1N4148W,Diodes Incorporated,High speed switching diode SOD-123 surface mount
+1N4148,Diodes Incorporated,High speed switching diode DO-35 axial through hole
+RC0603FR-0710KL,Yageo,10 kiloohm 10k 1 percent 0603 chip resistor
+RC0603FR-071KL,Yageo,1 kiloohm 1k 1 percent 0603 chip resistor
+CL10B104KB8NNNC,Samsung Electro-Mechanics,100 nanofarad 100nF 50V X7R 0603 ceramic capacitor
+CL10B103KB8NNNC,Samsung Electro-Mechanics,10 nanofarad 10nF 50V X7R 0603 ceramic capacitor

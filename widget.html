@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PartBasket order comparison</title>
+<style>
+:root { color-scheme: light dark; font: 14px/1.45 system-ui,sans-serif; color: CanvasText; background: Canvas; }
+body { margin: 0; padding: 16px; }
+main { border: 1px solid color-mix(in srgb, CanvasText 20%, Canvas); padding: 15px; border-radius: 12px;}
+h2 { font-size: 1.05rem; margin: 0 0 4px;} p { margin: 0 0 12px; }
+#total { font-size: 1.9rem; font-weight: 700; letter-spacing: -.04em; margin-bottom: 0; }
+small { color: color-mix(in srgb, CanvasText 72%, Canvas); }
+table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+th,td { text-align: left; padding: 7px 5px; border-top: 1px solid color-mix(in srgb, CanvasText 19%, Canvas); }
+td:last-child, th:last-child { text-align: right; }
+</style>
+<main>
+  <h2>PartBasket order comparison</h2>
+  <p id="total">Ready to compare</p>
+  <p id="context"></p>
+  <div id="projects"></div>
+  <small id="limits"></small>
+</main>
+<script>
+const el = id => document.getElementById(id);
+const cad = value => new Intl.NumberFormat("en-CA", { style:"currency", currency:"CAD" }).format(value);
+function render(result) {
+    if (!result || !result.quote_source) return;
+    const best = result.plans?.optimized;
+    el("total").textContent = best ? cad(best.total) : "No complete order";
+    el("context").textContent = result.quote_source + (best
+        ? " · " + cad(result.savings) + " less than selecting each lowest part price"
+        : " · Missing: " + (result.unavailable || []).map(row => row.mpn).join(", "));
+    el("projects").replaceChildren();
+    if (best) {
+        const table = document.createElement("table"), head = table.createTHead().insertRow();
+        for (const title of ["Project", "Parts", "Shipping", "Total"]) {
+            const cell = document.createElement("th"); cell.textContent = title; head.append(cell);
+        }
+        const body = table.createTBody();
+        for (const project of result.projects) {
+            const row = body.insertRow();
+            for (const text of [project.name, cad(project.parts), cad(project.shipping), cad(project.total)])
+                row.insertCell().textContent = text;
+        }
+        el("projects").append(table);
+    }
+    el("limits").textContent = (result.limitations || []).join(" ");
+    reportHeight();
+}
+function post(message) { if (window.parent !== window) window.parent.postMessage({jsonrpc:"2.0",...message},"*"); }
+function reportHeight() { post({method:"ui/notifications/size-changed",params:{height:document.documentElement.scrollHeight}}); }
+window.addEventListener("message", ({source,data}) => {
+    if (source !== window.parent || data?.jsonrpc !== "2.0") return;
+    if (data.id === 1 && data.result) {
+        post({method:"ui/notifications/initialized"});
+        reportHeight();
+    }
+    if (data.method === "ui/notifications/tool-result") render(data.params?.structuredContent);
+});
+new ResizeObserver(reportHeight).observe(document.body);
+post({id:1,method:"ui/initialize",params:{appInfo:{name:"PartBasket",version:"1.0.0"},appCapabilities:{},protocolVersion:"2026-01-26"}});
+</script>
+</html>

@@ -1,0 +1,22 @@
+services:
+  workspace:
+    build: .
+    command: ["python", "app.py"]
+    ports:
+      - "127.0.0.1:5174:5174"
+    environment:
+      PARTBASKET_WEB_BIND: "0.0.0.0"
+      PARTBASKET_WEB_PASSWORD: "${PARTBASKET_WEB_PASSWORD:?Set a workspace password in your shell}"
+    volumes:
+      - orders:/app/instance
+  mcp:
+    build: .
+    ports:
+      - "127.0.0.1:8787:8787"
+    environment:
+      PARTBASKET_MCP_BIND: "0.0.0.0"
+      PARTBASKET_MCP_HOSTS: "${PARTBASKET_MCP_HOSTS:-localhost:*,127.0.0.1:*}"
+      PARTBASKET_MCP_ORIGINS: "${PARTBASKET_MCP_ORIGINS:-http://localhost:*,http://127.0.0.1:*}"
+
+volumes:
+  orders:
