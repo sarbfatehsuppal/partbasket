@@ -39,6 +39,33 @@ Each part number uses one supplier. Shipping is a flat user estimate per supplie
 
 Both POST endpoints accept JSON. The compare endpoint validates requests with Pydantic and returns field-level errors for invalid input. It saves a comparison only when the request includes the JSON boolean true in the save field.
 
+### Google Cloud Run
+
+The Cloud Run configuration serves the example and comparison endpoints behind Google Cloud IAM. It compares orders in memory. The hosted API returns an error for requests to save an order.
+
+From the repository root, use a Google Cloud project with active billing or trial credit:
+
+~~~bash
+gcloud run deploy partbasket-api --source . --project PROJECT_ID --region us-central1 \
+  --command python --args app.py --port 8080 --no-allow-unauthenticated \
+  --min-instances 0 --max-instances 1 --concurrency 4 --cpu 1 --memory 512Mi
+~~~
+
+To test as a user with the Cloud Run Invoker role, run the authenticated proxy:
+
+~~~bash
+gcloud run services proxy partbasket-api --project PROJECT_ID --region us-central1 --port 8080
+~~~
+
+In another terminal, request the example and pass it to the comparison endpoint:
+
+~~~bash
+curl -fsS http://localhost:8080/api/workspace/example |
+  curl -fsS -H 'Content-Type: application/json' --data-binary @- http://localhost:8080/api/workspace/compare
+~~~
+
+Cloud Build and Artifact Registry are used for the source deployment. See [Google Cloud's source deployment guide](https://docs.cloud.google.com/run/docs/deploying-source-code) for project setup and role requirements.
+
 ## ChatGPT plugin
 
 Start the remote tool transport in a second terminal:

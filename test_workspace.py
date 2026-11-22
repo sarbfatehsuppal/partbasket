@@ -11,6 +11,18 @@ from workspace import compare_orders
 
 
 class WorkspaceTests(unittest.TestCase):
+    def test_cloud_comparison_has_no_saved_order_access(self):
+        client = app.test_client()
+        with patch.dict(app.config, {"COMPARE_ONLY": True}), patch("app.history.save") as save:
+            example = client.get("/api/workspace/example").json
+            response = client.post("/api/workspace/compare", json=example)
+            self.assertEqual(response.status_code, 200, response.json)
+            self.assertEqual(response.json["plans"]["optimized"]["total"], "24.43")
+            self.assertEqual(client.post("/api/workspace/compare", json={**example, "save": True}).status_code, 400)
+            self.assertEqual(client.get("/api/workspace/plans").status_code, 404)
+            self.assertEqual(client.get("/").status_code, 404)
+            save.assert_not_called()
+
     def test_compare_rejects_invalid_json_before_saving(self):
         client = app.test_client()
         example = client.get("/api/workspace/example").json

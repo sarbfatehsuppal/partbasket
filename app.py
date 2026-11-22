@@ -15,6 +15,7 @@ from workspace import compare_orders, parse_quotes, sample_order
 
 app = Flask(__name__, static_folder=str(ROOT / "web"), static_url_path="/assets")
 app.config["MAX_CONTENT_LENGTH"] = 350_000
+app.config["COMPARE_ONLY"] = False
 app.config["TRUSTED_HOSTS"] = [host.strip() for host in
                                os.environ.get("PARTBASKET_WEB_HOSTS", "127.0.0.1,localhost").split(",")]
 catalog = Catalog()
@@ -37,6 +38,9 @@ class CompareRequest(BaseModel):
 
 @app.before_request
 def authorize():
+    if app.config["COMPARE_ONLY"] and request.endpoint not in {"workspace_example", "compare"}:
+        return {"error": "Endpoint not found."}, 404
+
     password = os.environ.get("PARTBASKET_WEB_PASSWORD")
     if password:
         credentials = request.authorization
@@ -108,6 +112,9 @@ def compare():
     except ValidationError as error:
         details = error.errors(include_input=False, include_context=False, include_url=False)
         return {"error": "Check the order request fields.", "details": details}, 400
+
+    if app.config["COMPARE_ONLY"] and payload.save:
+        return {"error": "This service compares orders without saving them."}, 400
 
     try:
         result = compare_orders([project.model_dump() for project in payload.projects],
@@ -203,8 +210,12 @@ def plan():
 if __name__ == "__main__":
     from waitress import serve
 
-    host = os.environ.get("PARTBASKET_WEB_BIND", "127.0.0.1")
-    if host not in ("127.0.0.1", "::1", "localhost") and not os.environ.get("PARTBASKET_WEB_PASSWORD"):
-        raise SystemExit("Set PARTBASKET_WEB_PASSWORD before binding the workspace beyond loopback.")
-    serve(app, host=host, port=int(os.environ.get("PARTBASKET_WEB_PORT", "5174")),
-          threads=4, max_request_body_size=350_000, expose_tracebacks=False)
+    if os.environ.get("K_SERVICE"):
+        app.config.update(COMPARE_ONLY=True, TRUSTED_HOSTS=[".run.app", "localhost", "127.0.0.1"])
+        host, port = "0.0.0.0", int(os.environ["PORT"])
+    else:
+        host = os.environ.get("PARTBASKET_WEB_BIND", "127.0.0.1")
+        if host not in ("127.0.0.1", "::1", "localhost") and not os.environ.get("PARTBASKET_WEB_PASSWORD"):
+            raise SystemExit("Set PARTBASKET_WEB_PASSWORD before binding the workspace beyond loopback.")
+        port = int(os.environ.get("PARTBASKET_WEB_PORT", "5174"))
+    serve(app, host=host, port=port, threads=4, max_request_body_size=350_000, expose_tracebacks=False)

@@ -1,0 +1,24 @@
+# Only upload the sources needed to build and test the container.
+*
+!.gcloudignore
+!.dockerignore
+!Dockerfile
+!requirements.txt
+!optimizer.cpp
+!app.py
+!history.py
+!matching.py
+!mcp_server.py
+!planner.py
+!suppliers.py
+!workspace.py
+!widget.html
+!test_partbasket.py
+!test_workspace.py
+!data/
+!data/*.csv
+!web/
+!web/*.html
+!web/*.css
+!web/*.js
+!web/*.csv
