@@ -20,8 +20,9 @@ class WorkspaceTests(unittest.TestCase):
             response = client.post("/api/workspace/compare", json={**example, "mode": "sample", "save": True})
             self.assertEqual(response.status_code, 200, response.json)
             plan = response.json
-            self.assertEqual(plan["plans"]["optimized"]["total"], "104.01")
-            self.assertEqual(sum(Decimal(p["total"]) for p in plan["projects"]), Decimal("104.01"))
+            self.assertEqual(plan["plans"]["optimized"]["total"], "24.43")
+            self.assertEqual(plan["plans"]["per_part"]["total"], "33.22")
+            self.assertEqual(sum(Decimal(p["total"]) for p in plan["projects"]), Decimal("24.43"))
             identifier = plan["saved_id"]
             path = f"/api/workspace/plans/{identifier}"
             self.assertEqual(client.get("/api/workspace/plans").json["orders"][0]["id"], identifier)
@@ -57,7 +58,7 @@ class PluginTests(unittest.IsolatedAsyncioTestCase):
     async def test_tool_returns_same_plan_without_history(self):
         example = get_sample_order()
         comparison = await compare_boms(example.projects, "sample")
-        self.assertEqual(comparison.plans["optimized"].total, "104.01")
-        self.assertEqual([item.total for item in comparison.projects], ["102.19","1.82"])
-        self.assertEqual(len(comparison.optimized_lines), 24)
+        self.assertEqual(comparison.plans["optimized"].total, "24.43")
+        self.assertEqual([item.total for item in comparison.projects], ["15.12", "9.31"])
+        self.assertEqual(len(comparison.optimized_lines), 5)
         self.assertNotIn("saved_id", comparison.model_dump())

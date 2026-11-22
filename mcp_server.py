@@ -15,9 +15,9 @@ from mcp.types import ToolAnnotations
 from pydantic import BaseModel, Field
 
 from matching import Catalog
-from planner import ROOT, Part, MICROS
+from planner import Part, MICROS
 from suppliers import SupplierError, configured_suppliers
-from workspace import compare_orders, label
+from workspace import compare_orders, label, sample_order
 
 WIDGET = "ui://partbasket/order-comparison-v1.html"
 READ_ONLY = ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=False)
@@ -155,17 +155,8 @@ class DemoOrder(BaseModel):
 
 @server.tool(title="Load a sample electronics order", annotations=READ_ONLY)
 def get_sample_order() -> DemoOrder:
-    """Return two sample BOMs and shipping estimates for a synthetic rover order. Use only for demos."""
-    from workspace import DEMO_SHIPPING
-
-    return DemoOrder(
-        projects=[
-            ProjectInput(name="Rover carrier", boards=1, bom=(ROOT / "web/rover-demo-bom.csv").read_text(encoding="utf-8")),
-            ProjectInput(name="Spare sensor interface", boards=2, bom="mpn,quantity\nDEMO-RVR-R2K2,1\nDEMO-RVR-R3K3,1\nDEMO-RVR-C100N,2"),
-        ],
-        shipping=DEMO_SHIPPING,
-        quote_source="Synthetic demo quotes",
-    )
+    """Return two sample electronics BOMs with synthetic quotes and shipping. Use only for demos."""
+    return DemoOrder.model_validate({**sample_order(), "quote_source": "Synthetic demo quotes"})
 
 
 class ExactPart(BaseModel):

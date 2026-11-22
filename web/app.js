@@ -410,6 +410,7 @@ function navigate(history) {
 $("planner-tab").addEventListener("click", () => navigate(false));
 $("back").addEventListener("click", () => navigate(false));
 $("history-tab").addEventListener("click", () => navigate(true));
+$("open-agent").addEventListener("click", () => $("agent-dialog").showModal());
 
 addProject();
 selectMode("sample");

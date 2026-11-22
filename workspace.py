@@ -5,12 +5,24 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from io import StringIO
 
-from planner import Offer, Part, integer, key, micros, money, optimize, parse_bom, read_demo
+from planner import ROOT, Offer, Part, integer, key, micros, money, optimize, parse_bom, read_demo
 
 DEMO_SHIPPING = {"Northstar": "8.00", "CircuitHouse": "10.00"}
 REQUIRED_QUOTE_COLUMNS = {"mpn", "supplier", "sku", "stock", "minimum", "multiple", "threshold", "unit_cad"}
 LIMITS = ["Shipping is a flat CAD estimate per supplier.", "Each BOM line is filled by one supplier.",
           "Tax and duties are excluded. Confirm estimates at checkout."]
+
+
+def sample_order():
+    return {
+        "shipping": dict(DEMO_SHIPPING),
+        "projects": [
+            {"name": "Signal conditioning board", "boards": 4,
+             "bom": (ROOT / "data" / "demo_bom.csv").read_text(encoding="utf-8")},
+            {"name": "Timer module", "boards": 6,
+             "bom": "mpn,quantity\nNE555P,1\nRC0603FR-0710KL,2\nCL10B104KB8NNNC,1"},
+        ],
+    }
 
 
 def label(value, field, maximum=100):

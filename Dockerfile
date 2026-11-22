@@ -3,7 +3,7 @@ WORKDIR /src
 COPY optimizer.cpp .
 RUN mkdir /artifacts && g++ -std=c++17 -O2 -Wall -Wextra -Wpedantic -static optimizer.cpp -o /artifacts/optimizer
 
-FROM python:3.12-slim-bookworm
+FROM python:3.12-slim-bookworm AS runtime
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
 WORKDIR /app
 COPY requirements.txt .
@@ -14,3 +14,9 @@ COPY data ./data
 COPY web ./web
 USER 10001:10001
 CMD ["python", "mcp_server.py"]
+
+FROM runtime AS test
+COPY test_partbasket.py test_workspace.py ./
+RUN --network=none python -m unittest -v test_partbasket test_workspace
+
+FROM runtime AS release

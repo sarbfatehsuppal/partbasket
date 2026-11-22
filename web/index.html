@@ -11,19 +11,27 @@
 <body>
   <header class="top">
     <div class="top-inner">
-      <a class="brand" href="/" aria-label="PartBasket home"><span class="brand-mark" aria-hidden="true">▦</span> PartBasket</a>
+      <a class="brand" href="/" aria-label="PartBasket home"><span class="brand-mark" aria-hidden="true"></span> PartBasket</a>
       <nav aria-label="Workspace">
         <button id="planner-tab" class="nav-button active" type="button" aria-current="page">Order planner</button>
         <button id="history-tab" class="nav-button" type="button">Saved orders</button>
       </nav>
-      <span class="currency">CAD workspace</span>
+      <button class="agent-button" id="open-agent" type="button">Agent setup <span aria-hidden="true">↗</span></button>
     </div>
   </header>
   <main>
     <div id="planner-view">
-      <div class="page-heading">
-        <div><h1>Plan a parts order</h1><p>Combine project BOMs, compare suppliers, and split the bill.</p></div>
-        <div class="button-set"><button class="quiet" id="blank" type="button">Start blank</button><button class="secondary" id="example" type="button">Load rover example</button></div>
+      <div class="page-heading planner-hero">
+        <div class="hero-content">
+          <p class="workspace-label">Purchasing workspace <span>·</span> CAD</p>
+          <h1>Source electronics parts.</h1>
+          <p>Combine bills of materials, compare supplier quotes with shipping, and split costs by project.</p>
+          <div class="button-set"><button id="blank" type="button">Start blank <span aria-hidden="true">→</span></button><button id="example" type="button">Load example</button></div>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="trace trace-top"></div><div class="trace trace-bottom"></div><div class="trace trace-right"></div>
+          <div class="chip"><span></span></div>
+        </div>
       </div>
       <div class="workspace">
         <form id="planner" class="configuration">
@@ -49,7 +57,7 @@
         <div class="analysis">
           <section class="panel results" id="result-panel" aria-labelledby="result-title">
             <div class="panel-heading"><div><h2 id="result-title">Order comparison</h2><p id="result-summary" class="hint"></p></div><span id="result-badge" class="badge" hidden></span></div>
-            <div id="results" aria-live="polite"><div class="empty"><strong>Your comparison will appear here</strong><p>Add a parts list and supplier quotes, or load the rover example.</p></div></div>
+            <div id="results" aria-live="polite"><div class="empty"><strong>Your comparison will appear here</strong><p>Add a parts list and supplier quotes, or load the example.</p></div></div>
           </section>
           <details class="panel lookup">
             <summary>Look up a part number in the sample catalog</summary>
@@ -70,17 +78,30 @@
       </div>
     </div>
   </main>
+  <dialog id="agent-dialog" aria-labelledby="agent-title">
+    <form method="dialog" class="panel-heading">
+      <h2 id="agent-title">Use PartBasket with a chat agent</h2>
+      <button type="submit" class="quiet" aria-label="Close agent setup">Close</button>
+    </form>
+    <p>PartBasket provides read-only MCP tools for comparing orders, suggesting part numbers, and loading a sample. To use them in ChatGPT, connect your running server through a private MCP tunnel.</p>
+    <div class="agent-prompt">Try asking: “Compare the sample electronics order and split the cost by project.”</div>
+    <div class="agent-links">
+      <a href="https://developers.openai.com/api/docs/guides/secure-mcp-tunnels">Tunnel setup guide ↗</a>
+      <a href="https://chatgpt.com/plugins">Open ChatGPT Plugins ↗</a>
+    </div>
+  </dialog>
   <template id="project-template">
     <article class="project">
       <div class="project-head">
-        <label>Project name<input class="project-name" maxlength="60" required placeholder="e.g. Rover carrier"></label>
-        <label>Boards<input class="project-boards" type="number" min="1" max="1000" value="1" required></label>
+        <label>Project name<input class="project-name" maxlength="60" required placeholder="e.g. Sensor interface"></label>
+        <label>Units<input class="project-boards" type="number" min="1" max="1000" value="1" required></label>
         <button class="quiet remove" type="button" aria-label="Remove project">×</button>
       </div>
       <details class="bom">
         <summary><span class="bom-preview">Add BOM</span></summary>
         <label>Upload BOM CSV<input class="project-file" type="file" accept=".csv,text/csv"></label>
         <label>BOM CSV text<textarea class="project-bom" rows="5" spellcheck="false" placeholder="Manufacturer Part Number,Quantity"></textarea></label>
+        <p class="hint">Enter the quantity of each part per unit.</p>
       </details>
     </article>
   </template>

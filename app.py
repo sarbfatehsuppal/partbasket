@@ -9,7 +9,7 @@ import history
 from matching import Catalog
 from planner import ROOT, micros, optimize, parse_bom, read_demo
 from suppliers import SupplierError, configured_suppliers
-from workspace import DEMO_SHIPPING, compare_orders, parse_quotes
+from workspace import compare_orders, parse_quotes, sample_order
 
 app = Flask(__name__, static_folder=str(ROOT / "web"), static_url_path="/assets")
 app.config["MAX_CONTENT_LENGTH"] = 350_000
@@ -64,12 +64,7 @@ def home():
 
 @app.get("/api/workspace/example")
 def workspace_example():
-    return {"shipping": DEMO_SHIPPING, "projects": [
-        {"name": "Rover carrier", "boards": 1,
-         "bom": (ROOT / "web/rover-demo-bom.csv").read_text(encoding="utf-8")},
-        {"name": "Spare sensor interface", "boards": 2,
-         "bom": "Manufacturer Part Number,Quantity\nDEMO-RVR-R2K2,1\nDEMO-RVR-R3K3,1\nDEMO-RVR-C100N,2"},
-    ]}
+    return sample_order()
 
 
 @app.get("/api/workspace/quote-template")

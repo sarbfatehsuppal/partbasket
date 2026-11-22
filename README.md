@@ -15,7 +15,7 @@ python -m venv .venv
 
 On Linux or macOS, use `.venv/bin/python`. If needed, set `CXX` to your GCC or Clang executable. The build script also detects GCC installed under the default Windows MSYS2 UCRT64 path.
 
-Open [the local workspace](http://127.0.0.1:5174/). The rover example opens automatically. It combines two sample projects into a CAD $104.01 order, compared with $108.41 if choosing each cheapest offer without considering shipping. The two project shares are $102.19 and $1.82. These are synthetic quote results.
+Open [the local workspace](http://127.0.0.1:5174/). The example compares synthetic supplier quotes for a signal-conditioning board and a timer module. Use your own part numbers and supplier quotes for any electronics project.
 
 For a real comparison, select **Start blank**, add one or more projects, upload each BOM and a supplier quote CSV, and enter a shipping estimate for each supplier. Use **Save order** to record a comparison in SQLite. Export either the supplier order list or the project cost split as CSV. Unsaved inputs go to the local server for the request. The server stores results only when you save an order.
 
@@ -23,13 +23,21 @@ For a real comparison, select **Start blank**, add one or more projects, upload 
 
 - **BOM:** UTF-8 CSV with `Manufacturer Part Number` and `Quantity`. `Manufacturer` is optional but helps when several manufacturers use the same number. Quantity means parts per board.
 - **Quotes:** Use the [quote template](data/quote-template.csv). Each row contains `mpn,supplier,sku,stock,minimum,multiple,threshold,unit_cad`. Add optional `manufacturer` and `reference` columns for attribution. Repeat the SKU on one row per price break, with matching stock and pack rules. Use CAD per unit and enter shipping separately.
-- The [rover fixture](web/rover-demo-bom.csv) is based on the [four-motor Altium carrier draft](https://github.com/sarbfatehsuppal/robotrover/blob/main/altium/README.md). Fixture part IDs are synthetic. It omits the undecided fuse, diode and switches, plus cells and mechanical parts.
+- The [demo parts list](data/demo_bom.csv) shows a ready-to-import CSV.
 
 ### How it calculates totals
 
 For the given offers, the solver compares supplier subsets and chooses the least expensive eligible quantity for each BOM line. It adds shipping once for each supplier actually used. It can buy extras when a pack size requires it or a higher price break lowers the line total. Parts costs are split by the units each project requests. Shipping is split by each project's parts cost within that supplier's order. Rounded cents reconcile to the order total.
 
 Each part number uses one supplier. Shipping is a flat user estimate per supplier, and taxes and duties are excluded. A missing or short-stock part blocks a complete plan. The catalog matcher ranks 10 sample parts using TF-IDF. Users confirm part numbers before putting them on a BOM.
+
+### HTTP API
+
+- GET /api/workspace/example returns a sample request with two project BOMs and shipping estimates.
+- POST /api/workspace/quotes validates supplier quote CSV in the quote_csv field and returns supplier, offer, and part counts.
+- POST /api/workspace/compare accepts a JSON body with projects, mode, and shipping. In quotes mode, include quote_csv. Each project supplies name, boards (the number of units), and bom (CSV text). The response includes order totals, supplier line items, and project cost splits.
+
+Both POST endpoints accept JSON. The comparison is saved only when the request explicitly includes save: true.
 
 ## ChatGPT plugin
 
@@ -45,7 +53,7 @@ The local endpoint is `http://127.0.0.1:8787/mcp`. The tools are read-only and s
 
 1. In [OpenAI Platform tunnel settings](https://platform.openai.com/settings/organization/tunnels), create a Secure MCP Tunnel for the ChatGPT workspace where you will use PartBasket. Create a runtime API key with tunnel access in [Platform API key settings](https://platform.openai.com/settings/organization/api-keys). See the [Secure MCP Tunnel guide](https://developers.openai.com/api/docs/guides/secure-mcp-tunnels) for role and workspace requirements.
 2. Keep the MCP server running. In another PowerShell window in the PartBasket folder, run `.\Connect-PartBasket.ps1`. Enter the tunnel ID and runtime key in the local prompts. The launcher passes the key to the tunnel process without writing it to disk. If the client is missing, extract the [official Windows x64 release](https://github.com/openai/tunnel-client/releases/tag/v0.0.21) to `build\openai-tunnel-v0.0.21-win-amd64` and verify the archive against the release's SHA-256 digest.
-3. Go to [ChatGPT Plugins](https://chatgpt.com/plugins), choose **Add custom MCP server → Tunnel**, select the running tunnel, and name the connection **PartBasket**. Keep the tunnel running while you use it. Try asking “Use PartBasket to load the rover example and split the order by project.”
+3. Go to [ChatGPT Plugins](https://chatgpt.com/plugins), choose **Add custom MCP server → Tunnel**, select the running tunnel, and name the connection **PartBasket**. Keep the tunnel running while you use it. Try asking “Use PartBasket to compare the sample electronics order and split the cost by project.”
 
 To use a CSV in ChatGPT, make its rows available to the conversation or paste them as text. The MCP service accepts CSV text. ChatGPT processes what you share in the conversation, including the CSV data it passes to the tool.
 
@@ -79,3 +87,5 @@ The ZIP contains the plugin metadata, connection descriptor and assistant instru
 ```
 
 The checks cover supplier payload fixtures, native optimization against exhaustive search, cent reconciliation, missing stock, saved orders, and MCP result parity. The matching benchmark uses ten fixture phrases.
+
+GitHub Actions builds the C++17 optimizer and runs the tests in Docker on pull requests, pushes to main, and version tags. A passing v-prefixed version tag also publishes a versioned Docker image to GitHub Container Registry using the workflow's GitHub token.
