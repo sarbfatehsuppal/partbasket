@@ -37,7 +37,7 @@ Each part number uses one supplier. Shipping is a flat user estimate per supplie
 - POST /api/workspace/quotes validates supplier quote CSV in the quote_csv field and returns supplier, offer, and part counts.
 - POST /api/workspace/compare accepts a JSON body with projects, mode, and shipping. In quotes mode, include quote_csv. Each project supplies name, boards (the number of units), and bom (CSV text). The response includes order totals, supplier line items, and project cost splits.
 
-Both POST endpoints accept JSON. The comparison is saved only when the request explicitly includes save: true.
+Both POST endpoints accept JSON. The compare endpoint validates requests with Pydantic and returns field-level errors for invalid input. It saves a comparison only when the request includes the JSON boolean true in the save field.
 
 ## ChatGPT plugin
 

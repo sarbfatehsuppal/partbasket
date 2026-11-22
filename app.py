@@ -1,9 +1,11 @@
 from datetime import datetime, timezone
 from hmac import compare_digest
 import os
+from typing import Literal
 from urllib.parse import urlsplit
 
 from flask import Flask, Response, jsonify, request, send_from_directory
+from pydantic import BaseModel, Field, StrictBool, StrictFloat, StrictInt, StrictStr, ValidationError
 
 import history
 from matching import Catalog
@@ -17,6 +19,20 @@ app.config["TRUSTED_HOSTS"] = [host.strip() for host in
                                os.environ.get("PARTBASKET_WEB_HOSTS", "127.0.0.1,localhost").split(",")]
 catalog = Catalog()
 suppliers = configured_suppliers()
+
+
+class ProjectRequest(BaseModel):
+    name: str
+    boards: StrictInt | StrictStr = 1
+    bom: str = Field(max_length=100_000)
+
+
+class CompareRequest(BaseModel):
+    projects: list[ProjectRequest] = Field(min_length=1, max_length=8)
+    mode: Literal["sample", "quotes"] = "sample"
+    quote_csv: str | None = Field(default=None, max_length=140_000)
+    shipping: dict[str, StrictStr | StrictInt | StrictFloat] | None = None
+    save: StrictBool = False
 
 
 @app.before_request
@@ -87,13 +103,16 @@ def inspect_quotes():
 
 @app.post("/api/workspace/compare")
 def compare():
-    payload = request.get_json(silent=True)
-    if not isinstance(payload, dict):
-        return {"error": "Supply projects and quote settings."}, 400
     try:
-        result = compare_orders(payload.get("projects"), payload.get("mode", "sample"),
-                                payload.get("quote_csv"), payload.get("shipping"))
-        if payload.get("save") is True:
+        payload = CompareRequest.model_validate(request.get_json(silent=True))
+    except ValidationError as error:
+        details = error.errors(include_input=False, include_context=False, include_url=False)
+        return {"error": "Check the order request fields.", "details": details}, 400
+
+    try:
+        result = compare_orders([project.model_dump() for project in payload.projects],
+                                payload.mode, payload.quote_csv, payload.shipping)
+        if payload.save:
             if result["unavailable"]:
                 return {"error": "Resolve missing parts before saving this order."}, 400
             result["saved_id"] = history.save(result)

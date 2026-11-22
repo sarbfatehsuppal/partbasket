@@ -11,6 +11,26 @@ from workspace import compare_orders
 
 
 class WorkspaceTests(unittest.TestCase):
+    def test_compare_rejects_invalid_json_before_saving(self):
+        client = app.test_client()
+        example = client.get("/api/workspace/example").json
+        with patch("app.history.save") as save:
+            response = client.post("/api/workspace/compare", json={**example, "save": "true"})
+            self.assertEqual(response.status_code, 400)
+            self.assertEqual(response.json["details"][0]["loc"], ["save"])
+            self.assertNotIn("input", response.json["details"][0])
+            save.assert_not_called()
+
+    def test_compare_accepts_legacy_board_counts_and_numeric_shipping(self):
+        client = app.test_client()
+        project = {"name": "Timer", "bom": "mpn,quantity\nNE555P,1"}
+        response = client.post("/api/workspace/compare", json={
+            "projects": [project, {**project, "name": "Spare timer", "boards": "02"}],
+            "shipping": {"Northstar": 8, "CircuitHouse": 10.5},
+        })
+        self.assertEqual(response.status_code, 200, response.json)
+        self.assertEqual([item["boards"] for item in response.json["projects"]], [1, 2])
+
     def test_allocations_and_history(self):
         client = app.test_client()
         example = client.get("/api/workspace/example").json
